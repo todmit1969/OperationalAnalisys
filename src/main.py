@@ -16,7 +16,6 @@ def main():
         formatted_date = to_datetime(to_datetime(user_date).strftime("%Y-%m-%d %H:%M:%S"))
         print(transactions(formatted_date))
 
-    print(formatted_date)
     print(top_transactions(formatted_date))
     print(exchange_rate())
     print(price_stocks())
