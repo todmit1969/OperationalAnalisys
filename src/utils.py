@@ -41,7 +41,7 @@ def transactions(date_time: pd.Timestamp) -> pd.DataFrame:
     sales_by_card = df_filtered.groupby('Номер карты')[['Сумма операции с округлением', 'кэшбек']].sum()
     sorted_sales = sales_by_card.sort_values(by='Сумма операции с округлением', ascending=False)
 
-    return sorted_sales.to_dict('series')
+    return sorted_sales.to_dict(orient="records", into=dict)
 
 
 def top_transactions(date_time: pd.Timestamp) -> pd.DataFrame:
@@ -66,7 +66,7 @@ def top_transactions(date_time: pd.Timestamp) -> pd.DataFrame:
                         format="%d.%m.%Y %H:%M:%S", dayfirst=True) >= date_time.replace(day=1))
         ]
 
-    top_5_transactions = (filtered_df.sort_values(by='Сумма операции с округлением', ascending=False).head(5)).to_dict()
+    top_5_transactions = (filtered_df.sort_values(by='Сумма операции с округлением', ascending=False).head(5)).to_dict(orient='records')
 
     return top_5_transactions
 
@@ -89,7 +89,10 @@ def exchange_rate(currency_list: list[str] = ["USD", "EUR"], to_currency: str = 
         currency_value = result.get('result')
 
         if currency_value:
-            new_currency_list.append({"currency": currency, "rate": currency_value})
+            new_currency_list.append({
+                                        "currency": currency,
+                                        "rate": currency_value
+                                    })
         else:
             print("Ошибка: ключ 'result' не найден в ответе для:", currency)
 
@@ -111,7 +114,10 @@ def price_stocks() -> list:
         result = response.json()
         price_element = result.get('price')
         if price_element:
-            price_stock.append({"stock":stock, "price":price_element})
+            price_stock.append({
+                                "stock":stock,
+                                "price":price_element
+                                })
         else:
             print(f"Ошибка: ключ {result} не найден в ответе для: ", stock)
 

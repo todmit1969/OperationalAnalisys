@@ -1,56 +1,35 @@
-import json
-import logging
-from collections import defaultdict
+import datetime
 from datetime import datetime
-from functools import reduce
-import pandas as pd
 from pathlib import Path
-
-logger = logging.getLogger(__name__)
-current_dir = Path(__file__).parent.parent.resolve()
-file_path_excel = current_dir/'data'/'operations.xlsx'
+import pandas as pd
+import json
 
 
-def get_cashback_categories(data, year, month):
-    """
-    Функция «Выгодные категории повышенного кешбэка»
-    Фильтрует транзакции по указанному году и месяцу
-    """
-    logger.info("Анализ категорий кешбэка за %d-%02d", year, month)
-    if not isinstance(data, pd.DataFrame):
-        raise ValueError("Требуется pandas DataFrame")
-
-    data['date'] = pd.to_datetime(data['Дата операции'], dayfirst=True)
-
-    # Фильтруем транзакции по году и месяцу
-    filtered = data[(data['date'].dt.year == year) & (data['date'].dt.month == month)].copy()
-    print(filtered)
-    if not filtered.empty:
-        cashback = (filtered.groupby('Категория')['Сумма операции с округлением']
-                    .sum()
-                    .div(100)
-                    .round()
-                    .astype(int)
-                    .to_dict())
-    else:
-        cashback = {}
+def increased_cashback(transactions, year, month):
+    """Функция фильтрует данные за год и месяц"""
+    filtered_data = [transaction for transaction in transactions
+                     if datetime.strptime(transaction['Дата операции'],'%d.%m.%Y %H:%M:%S').year == year
+                     and datetime.strptime(transaction['Дата операции'], '%d.%m.%Y %H:%M:%S').month == month]
+    return filtered_data
 
 
-    def accumulate(acc, transaction):
-        """Функция собирающая суммы по категориям"""
-        category = transaction["category"]
-        amount = abs(transaction["amount"])
-        acc[category] += amount
-        return acc
+def cash_by_category(list_of_category):
+    """Функция выводит данные сколько на каждой категории можно было заработать кешбэка в указанном месяце года"""
+    cashback_by_category = {}
+    for i in list_of_category:
+        category = i["Категория"]
+        cash = i["Бонусы (включая кэшбэк)"]
+        if category not in cashback_by_category:
+            cashback_by_category[category] = 0
+        cashback_by_category[category] += cash
+    return cashback_by_category
 
-    category_cashback = reduce(accumulate, filtered, defaultdict(int))
+if __name__ == "__main__":
+    current_dir = Path(__file__).parent.parent.resolve()
 
-    cashbacks = {category: round(amount * 0.01) for category, amount in category_cashback.items()}
+    file_path_excel = current_dir / 'data' / 'operations.xlsx'
+    data = pd.read_excel(file_path_excel).to_dict("records")
 
-    return json.dumps(cashbacks, ensure_ascii=False, indent=4)
-
-
-if __name__ == '__main__':
-    data = pd.read_excel(file_path_excel)
-   # print(data)
-    print(get_cashback_categories(data, '2021', '01'))
+    cashback = increased_cashback(data, 2021, 10)
+    supposed_cashback = cash_by_category(cashback)
+    print(supposed_cashback)
