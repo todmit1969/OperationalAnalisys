@@ -1,9 +1,13 @@
-import json
+import os
 from datetime import datetime
 import pandas as pd
-import os
 import requests
 from dotenv import load_dotenv
+import json
+from typing import Any
+
+from mypy.checkexpr import defaultdict
+from numpy.ma.core import append
 
 pd.options.mode.copy_on_write = True
 file_path_excel = ("../data/operations.xlsx").encode("utf-8").decode("unicode_escape")
@@ -28,26 +32,40 @@ def transactions(date_time: pd.Timestamp) -> pd.DataFrame:
     Функция извлекащая детали транзакций для каждой карты
     """
     df = pd.read_excel(file_path_excel)
-    data = pd.read_excel(file_path_excel)
-    json_data = data.to_json()
+
     # Фильтрация транзакций за указанный месяц
     df_filtered = df.loc[
          (pd.to_datetime(df['Дата операции'], dayfirst=True) <= date_time) &
          (pd.to_datetime(df['Дата операции'], dayfirst=True) >= date_time.replace(day=1))
      ]
+    df_filtered = df_filtered.to_dict(orient="records", into=dict)
+
+    card_data = {}
+    for transaction in df_filtered:
+        if isinstance(transaction["Номер карты"], str) and transaction["Номер карты"].startswith("*"):
+            last_digits = transaction["Номер карты"][-4:]
+            if last_digits in card_data:
+                continue
+            card_data[last_digits] = {"last_digits": last_digits, "total_spent": 0.0, "cashback": 0.0}
+            if transaction["Сумма операции"] < 0:
+                card_data[last_digits]["total_spent"] += round(transaction["Сумма операции"] * -1, 1)
+                card_data[last_digits]["cashback"] += transaction.get("Бонусы (включая кэшбэк)", 0.0)
+
+    return list(card_data.values())
 
     # Расчет кэшбека
-    df_filtered.loc[:, 'кэшбек'] = df_filtered['Сумма операции с округлением'] // 100
-    sales_by_card = df_filtered.groupby('Номер карты')[['Сумма операции с округлением', 'кэшбек']].sum()
-    sorted_sales = sales_by_card.sort_values(by='Сумма операции с округлением', ascending=False)
+    # df_filtered.loc[:, 'кэшбек'] = df_filtered['Сумма операции с округлением'] // 100
+    # sales_by_card = df_filtered.groupby('Номер карты')[['Сумма операции с округлением', 'кэшбек']].sum()
+    # sorted_sales = sales_by_card.sort_values(by='Сумма операции с округлением', ascending=False)
 
-    return sorted_sales.to_dict(orient="records", into=dict)
+    # return sorted_sales.to_dict(orient="records", into=dict)
 
 
 def top_transactions(date_time: pd.Timestamp) -> pd.DataFrame:
     """
     Функция извлекащая 5 топ транзакций по сумме платежа.
     """
+    sorted_top_5 = {'date', 'amount', 'category', 'description'}
 
     df = pd.read_excel(file_path_excel)
 
@@ -56,8 +74,10 @@ def top_transactions(date_time: pd.Timestamp) -> pd.DataFrame:
          (pd.to_datetime(df['Дата операции'], dayfirst=True) <= date_time) &
          (pd.to_datetime(df['Дата операции'], dayfirst=True) >= date_time.replace(day=1))
      ]
-    #print(df_filtered)
-    filtered_df = df.copy()
+
+    # df_filtered = df_filtered.do_dict(orient = "records")
+
+    filtered_df = df_filtered.copy()
 
     filtered_df = filtered_df.loc[
         (pd.to_datetime(filtered_df['Дата операции'],
@@ -65,10 +85,22 @@ def top_transactions(date_time: pd.Timestamp) -> pd.DataFrame:
         (pd.to_datetime(filtered_df['Дата операции'],
                         format="%d.%m.%Y %H:%M:%S", dayfirst=True) >= date_time.replace(day=1))
         ]
+    filtered_df = list(filtered_df.to_dict(orient="records"))
+    filtered_df.sort(key=lambda x: x["Сумма операции"], reverse=True)
+    top_5_transactions = list(filtered_df[:5])
+    print(top_5_transactions)
+    for item in top_5_transactions:
+        sorted_top_5["date"] = item["Дата платежа"]
+        sorted_top_5["amount"] = item["Сумма платежа"]
+        sorted_top_5["category"] = item["Категория"]
+        sorted_top_5["description"] = item["Описание"]
 
-    top_5_transactions = (filtered_df.sort_values(by='Сумма операции с округлением', ascending=False).head(5)).to_dict(orient='records')
+    print (sorted_top_5)
 
-    return top_5_transactions
+    #top_5_transactions = (filtered_df.sort_values(by='Сумма операции', ascending=False)
+    #                      .head(5)).to_dict(orient='records')
+
+    return sorted_top_5
 
 
 def exchange_rate(currency_list: list[str] = ["USD", "EUR"], to_currency: str = "RUB") -> list:
@@ -77,7 +109,7 @@ def exchange_rate(currency_list: list[str] = ["USD", "EUR"], to_currency: str = 
     путем вызова внешнего API.
     """
     load_dotenv()
-    API_KEY_exchange = "MV9jtNrG3n9b0WjrqfhVFOmonvCZXWrn"
+    API_KEY_exchange = os.getenv("API_KEY_exchange") # "MV9jtNrG3n9b0WjrqfhVFOmonvCZXWrn"
     new_currency_list = []
 
     for currency in currency_list:
@@ -98,13 +130,15 @@ def exchange_rate(currency_list: list[str] = ["USD", "EUR"], to_currency: str = 
 
     return new_currency_list
 
+
 def price_stocks() -> list:
     """
     Функция, которая извлекает цены акций из списка S&P 500
     путем вызова внешнего API.
+    :rtype: object
     """
     load_dotenv()
-    API_KEY_stocks =os.getenv("API_KEY_stocks")
+    API_KEY_stocks = os.getenv("API_KEY_stocks")
     stocks_list = ["AAPL", "AMZN", "GOOGL", "MSFT", "TSLA"]
     price_stock = []
 
@@ -115,10 +149,30 @@ def price_stocks() -> list:
         price_element = result.get('price')
         if price_element:
             price_stock.append({
-                                "stock":stock,
-                                "price":price_element
+                                "stock": stock,
+                                "price": price_element
                                 })
         else:
             print(f"Ошибка: ключ {result} не найден в ответе для: ", stock)
 
     return price_stock
+
+
+def read_excel(filename: str, datetime_to_timestamp: bool = True) -> pd.DataFrame:
+    """Функция для чтения excel файла"""
+    operations_df = pd.read_excel(filename)
+    if datetime_to_timestamp:
+        operations_df["Дата операции"] = pd.to_datetime(operations_df["Дата операции"], dayfirst=True)
+    return operations_df
+
+
+def write_json(file_path: str, data: list) -> None:
+    """ Открытие и запись json данных"""
+    with open(file_path, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=4, ensure_ascii=False)
+
+
+def read_json(file_path: str) -> Any:
+    with open(file_path, "r", encoding="utf-8") as f:
+        return json.load(f)
+

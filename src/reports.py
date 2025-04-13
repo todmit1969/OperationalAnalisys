@@ -1,11 +1,12 @@
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Optional
+
 import pandas as pd
 
 current_dir = Path(__file__).parent.parent.resolve()
 file_path_excel = current_dir/'data'/'operations.xlsx'
-#print(file_path_excel)
+# print(file_path_excel)
 
 
 def expenses_by_category(transactions: pd.DataFrame,

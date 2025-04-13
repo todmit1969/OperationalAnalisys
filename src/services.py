@@ -1,14 +1,12 @@
-import datetime
 from datetime import datetime
 from pathlib import Path
 import pandas as pd
-import json
 
 
 def increased_cashback(transactions, year, month):
     """Функция фильтрует данные за год и месяц"""
     filtered_data = [transaction for transaction in transactions
-                     if datetime.strptime(transaction['Дата операции'],'%d.%m.%Y %H:%M:%S').year == year
+                     if datetime.strptime(transaction['Дата операции'], '%d.%m.%Y %H:%M:%S').year == year
                      and datetime.strptime(transaction['Дата операции'], '%d.%m.%Y %H:%M:%S').month == month]
     return filtered_data
 
@@ -23,6 +21,7 @@ def cash_by_category(list_of_category):
             cashback_by_category[category] = 0
         cashback_by_category[category] += cash
     return cashback_by_category
+
 
 if __name__ == "__main__":
     current_dir = Path(__file__).parent.parent.resolve()
