@@ -1,17 +1,13 @@
-import os
 from datetime import datetime
-from typing import List, Any
-
-import requests
-from dotenv import load_dotenv
+from typing import List
 
 from config import FILE_PATH_EXCEL
-from src.utils import read_excel, write_json, read_json, greeting, exchange_rate, price_stocks
+from src.utils import exchange_rate, greeting, price_stocks, read_excel, read_json, write_json
 
 
 def sum_expenses_transactions(transactions: List[dict]) -> float:
     """Функция возвращает сумму расходов по списку"""
-    transactions =list(transactions.to_dict(orient="records"))
+    transactions = list(transactions.to_dict(orient="records"))
     expenses = 0
     for transaction in transactions:
         if transaction["Сумма операции"] < 0:
@@ -76,7 +72,7 @@ def main_page() -> None:
     output_file = "operations_data.json"
     write_json(output_file, output_data)
     print(read_json(output_file))
-    #print(output_data)
+
 
 if __name__ == "__main__":
     main_page()

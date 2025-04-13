@@ -1,16 +1,16 @@
+import json
 import os
 from datetime import datetime
+from typing import Any
+
 import pandas as pd
 import requests
 from dotenv import load_dotenv
-import json
-from typing import Any
 
-from mypy.checkexpr import defaultdict
-from numpy.ma.core import append
 
 pd.options.mode.copy_on_write = True
 file_path_excel = ("../data/operations.xlsx").encode("utf-8").decode("unicode_escape")
+
 
 def greeting(current_date: datetime):
     """ Функция приветствующая в зависимости от времени суток"""
@@ -95,10 +95,7 @@ def top_transactions(date_time: pd.Timestamp) -> pd.DataFrame:
         sorted_top_5["category"] = item["Категория"]
         sorted_top_5["description"] = item["Описание"]
 
-    print (sorted_top_5)
-
-    #top_5_transactions = (filtered_df.sort_values(by='Сумма операции', ascending=False)
-    #                      .head(5)).to_dict(orient='records')
+    print(sorted_top_5)
 
     return sorted_top_5
 
@@ -109,7 +106,7 @@ def exchange_rate(currency_list: list[str] = ["USD", "EUR"], to_currency: str = 
     путем вызова внешнего API.
     """
     load_dotenv()
-    API_KEY_exchange = os.getenv("API_KEY_exchange") # "MV9jtNrG3n9b0WjrqfhVFOmonvCZXWrn"
+    API_KEY_exchange = os.getenv("API_KEY_exchange")
     new_currency_list = []
 
     for currency in currency_list:
@@ -134,8 +131,7 @@ def exchange_rate(currency_list: list[str] = ["USD", "EUR"], to_currency: str = 
 def price_stocks() -> list:
     """
     Функция, которая извлекает цены акций из списка S&P 500
-    путем вызова внешнего API.
-    :rtype: object
+    путем вызова внешнего API
     """
     load_dotenv()
     API_KEY_stocks = os.getenv("API_KEY_stocks")
@@ -175,4 +171,3 @@ def write_json(file_path: str, data: list) -> None:
 def read_json(file_path: str) -> Any:
     with open(file_path, "r", encoding="utf-8") as f:
         return json.load(f)
-
