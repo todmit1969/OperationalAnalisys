@@ -32,18 +32,19 @@ def cards(transactions: List[dict]) -> List[dict]:
 
 def top_transactions(transactions: List[dict]) -> List[dict]:
     """Функция возвращает топ 5 транзакций"""
-    sorted_top_5 = {}
     transactions = list(transactions.to_dict(orient="records"))
     transactions.sort(key=lambda x: x["Сумма операции"], reverse=True)
     top_5_transactions = transactions[:5]
-    print(top_5_transactions)
-    for transaction in top_5_transactions:
-        sorted_top_5["date"] = transaction["Дата платежа"]
-        sorted_top_5["amount"] = transaction["Сумма платежа"]
-        sorted_top_5["category"] = transaction["Категория"]
-        sorted_top_5["description"] = transaction["Описание"]
+    sorted_top_5 = [
+            {
+                "date": t["Дата платежа"],
+                "amount": t["Сумма операции с округлением"],
+                "category": t["Категория"],
+                "description": t["Описание"]
+            }
+        for t in top_5_transactions
+        ]
     return sorted_top_5
-
 
 def main_page() -> None:
     """
@@ -69,10 +70,10 @@ def main_page() -> None:
         "currency_rates": currency_rates,
         "stock_prices": stock_prices,
     }
-    output_file = "operations_data.json"
-    write_json(output_file, output_data)
-    print(read_json(output_file))
-
+    #output_file = "operations_data.json"
+    #write_json(output_file, output_data)
+    #print(read_json(output_file))
+    print(output_data)
 
 if __name__ == "__main__":
     main_page()

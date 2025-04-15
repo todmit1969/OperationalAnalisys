@@ -48,7 +48,7 @@ def transactions(date_time: pd.Timestamp) -> pd.DataFrame:
                 continue
             card_data[last_digits] = {"last_digits": last_digits, "total_spent": 0.0, "cashback": 0.0}
             if transaction["Сумма операции"] < 0:
-                card_data[last_digits]["total_spent"] += round(transaction["Сумма операции"] * -1, 1)
+                card_data[last_digits]["total_spent"] += round(transaction["Сумма операции с округлением"] * -1, 1)
                 card_data[last_digits]["cashback"] += transaction.get("Бонусы (включая кэшбэк)", 0.0)
 
     return list(card_data.values())
@@ -86,19 +86,19 @@ def top_transactions(date_time: pd.Timestamp) -> pd.DataFrame:
                         format="%d.%m.%Y %H:%M:%S", dayfirst=True) >= date_time.replace(day=1))
         ]
     filtered_df = list(filtered_df.to_dict(orient="records"))
-    filtered_df.sort(key=lambda x: x["Сумма операции"], reverse=True)
+    filtered_df.sort(key=lambda x: x["Сумма операции с округлением"], reverse=True)
     top_5_transactions = list(filtered_df[:5])
-    print(top_5_transactions)
-    for item in top_5_transactions:
-        sorted_top_5["date"] = item["Дата платежа"]
-        sorted_top_5["amount"] = item["Сумма платежа"]
-        sorted_top_5["category"] = item["Категория"]
-        sorted_top_5["description"] = item["Описание"]
+    #print(top_5_transactions)
+    #for item in top_5_transactions:
+    #    sorted_top_5["date"] = item["Дата платежа"]
+    #    sorted_top_5["amount"] = item["Сумма платежа"]
+    #    sorted_top_5["category"] = item["Категория"]
+    #    sorted_top_5["description"] = item["Описание"]
 
-    print(sorted_top_5)
+    #print(sorted_top_5)
 
-    return sorted_top_5
-
+    #return sorted_top_5
+    return top_5_transactions
 
 def exchange_rate(currency_list: list[str] = ["USD", "EUR"], to_currency: str = "RUB") -> list:
     """
