@@ -7,7 +7,6 @@ import pandas as pd
 import requests
 from dotenv import load_dotenv
 
-
 pd.options.mode.copy_on_write = True
 file_path_excel = ("../data/operations.xlsx").encode("utf-8").decode("unicode_escape")
 
@@ -88,17 +87,18 @@ def top_transactions(date_time: pd.Timestamp) -> pd.DataFrame:
     filtered_df = list(filtered_df.to_dict(orient="records"))
     filtered_df.sort(key=lambda x: x["Сумма операции с округлением"], reverse=True)
     top_5_transactions = list(filtered_df[:5])
-    #print(top_5_transactions)
-    #for item in top_5_transactions:
-    #    sorted_top_5["date"] = item["Дата платежа"]
-    #    sorted_top_5["amount"] = item["Сумма платежа"]
-    #    sorted_top_5["category"] = item["Категория"]
-    #    sorted_top_5["description"] = item["Описание"]
+    print(top_5_transactions)
+    sorted_top_5 = [
+        {
+            "date": t["Дата операции"],
+            "amount": t["Сумма операции с округлением"],
+            "category": t["Категория"],
+            "description": t["Описание"]
+        }
+        for t in top_5_transactions
+    ]
+    return sorted_top_5
 
-    #print(sorted_top_5)
-
-    #return sorted_top_5
-    return top_5_transactions
 
 def exchange_rate(currency_list: list[str] = ["USD", "EUR"], to_currency: str = "RUB") -> list:
     """

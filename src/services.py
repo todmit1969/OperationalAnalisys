@@ -1,3 +1,4 @@
+import json
 from datetime import datetime
 from pathlib import Path
 
@@ -9,6 +10,7 @@ def increased_cashback(transactions, year, month):
     filtered_data = [transaction for transaction in transactions
                      if datetime.strptime(transaction['Дата операции'], '%d.%m.%Y %H:%M:%S').year == year
                      and datetime.strptime(transaction['Дата операции'], '%d.%m.%Y %H:%M:%S').month == month]
+
     return filtered_data
 
 
@@ -21,7 +23,8 @@ def cash_by_category(list_of_category):
         if category not in cashback_by_category:
             cashback_by_category[category] = 0
         cashback_by_category[category] += cash
-    return cashback_by_category
+    json_cashback = json.dumps(cashback_by_category, indent=4, ensure_ascii=False)
+    return json_cashback
 
 
 if __name__ == "__main__":

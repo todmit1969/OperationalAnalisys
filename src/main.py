@@ -1,3 +1,4 @@
+import json
 from datetime import datetime
 from pathlib import Path
 
@@ -5,7 +6,7 @@ import pandas as pd
 from pandas import to_datetime
 
 from src.services import cash_by_category, increased_cashback
-from src.utils import exchange_rate, greeting, price_stocks, read_json, top_transactions, transactions, write_json
+from src.utils import exchange_rate, greeting, price_stocks, top_transactions, transactions, write_json
 
 
 def main():
@@ -34,10 +35,10 @@ def main():
         "currency_rates": result_exchange,
         "stock_prices": result_stock
     }
-
+    json_result = json.dumps(result, indent=4, ensure_ascii=False)
     file_to_write = "operations_data.json"
     write_json(file_to_write, result)
-    print(read_json(file_to_write))
+    print(json_result)
 
     current_dir = Path(__file__).parent.parent.resolve()
     file_path_excel = current_dir / 'data' / 'operations.xlsx'

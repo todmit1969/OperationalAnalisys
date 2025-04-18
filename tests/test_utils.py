@@ -4,7 +4,7 @@ from unittest import mock
 import pandas as pd
 import pytest
 
-from src.utils import greeting, exchange_rate, top_transactions, price_stocks, transactions
+from src.utils import exchange_rate, greeting, price_stocks, top_transactions, transactions
 
 data = {
     'Дата операции': ['29.09.2018', '30.09.2018', '01.10.2018'],
@@ -106,11 +106,13 @@ def test_price_stocks(mock_requests_get):
     ]
 
     result = price_stocks()
-    expected = [{'price': '232.62000', 'stock': 'AAPL'},
- {'price': '232.75999', 'stock': 'AMZN'},
- {'price': '185.32001', 'stock': 'GOOGL'},
- {'price': '411.44000', 'stock': 'MSFT'},
- {'price': '328.5', 'stock': 'TSLA'}]
+    expected = [
+            {'price': '232.62000', 'stock': 'AAPL'},
+            {'price': '232.75999', 'stock': 'AMZN'},
+            {'price': '185.32001', 'stock': 'GOOGL'},
+            {'price': '411.44000', 'stock': 'MSFT'},
+            {'price': '328.5', 'stock': 'TSLA'}
+            ]
 
     assert result == expected
 

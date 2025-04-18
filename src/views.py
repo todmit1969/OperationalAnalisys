@@ -1,8 +1,9 @@
+import json
 from datetime import datetime
 from typing import List
 
 from config import FILE_PATH_EXCEL
-from src.utils import exchange_rate, greeting, price_stocks, read_excel, read_json, write_json
+from src.utils import exchange_rate, greeting, price_stocks, read_excel
 
 
 def sum_expenses_transactions(transactions: List[dict]) -> float:
@@ -42,9 +43,10 @@ def top_transactions(transactions: List[dict]) -> List[dict]:
                 "category": t["Категория"],
                 "description": t["Описание"]
             }
-        for t in top_5_transactions
-        ]
+            for t in top_5_transactions
+            ]
     return sorted_top_5
+
 
 def main_page() -> None:
     """
@@ -65,15 +67,15 @@ def main_page() -> None:
     output_data = {
         "greeting": greetings,
         "total_expenses": total_expenses,
-        "card_data": card_data,
+        "cards": card_data,
         "top_transactions": top_trans,
         "currency_rates": currency_rates,
         "stock_prices": stock_prices,
     }
-    #output_file = "operations_data.json"
-    #write_json(output_file, output_data)
-    #print(read_json(output_file))
-    print(output_data)
+    json_output_data = json.dumps(output_data, indent=4, ensure_ascii=False)
+
+    print(json_output_data)
+
 
 if __name__ == "__main__":
     main_page()

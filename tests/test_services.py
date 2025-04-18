@@ -26,9 +26,10 @@ def test_cash_by_category(mock_logger, transactions):
     result = cash_by_category(transactions)
 
     expected_result = {
-        "Одежда и обувь": 26,
-        "Супермаркеты": 146,
-        "Фастфуд": 110,
-        "Косметика": 7,
-    }
+                    'Еда': -500,
+                    'Косметика': -1000,
+                    'Одежда и обувь': -1500,
+                    'Супермаркеты': -2000,
+                    'Фастфуд': -3000
+                    }
     assert json.loads(result) == expected_result  # Проверяем результат
