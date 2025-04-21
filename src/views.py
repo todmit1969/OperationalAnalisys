@@ -74,8 +74,8 @@ def main_page() -> None:
     }
     json_output_data = json.dumps(output_data, indent=4, ensure_ascii=False)
 
-    print(json_output_data)
+    return json_output_data
 
 
 if __name__ == "__main__":
-    main_page()
+    print(main_page())
